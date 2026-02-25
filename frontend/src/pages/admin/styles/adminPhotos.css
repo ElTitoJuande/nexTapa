@@ -1,0 +1,184 @@
+
+
+
+/* src/pages/admin/styles/adminPhotos.css */
+/* ── Gestión de fotos del establecimiento ── */
+
+.establishment-photos-admin {
+   margin-top: 0.75rem;
+}
+
+.photos-panel {
+   position: relative;
+   margin-top: 1rem;
+   padding: 1.5rem;
+   background: var(--admin-bg-card, #f9fafb);
+   border: 1px solid var(--admin-border, #e5e7eb);
+   border-radius: 0.5rem;
+}
+
+.photos-panel-header {
+   display: flex;
+   align-items: center;
+   gap: 1rem;
+   margin-bottom: 1rem;
+   flex-wrap: wrap;
+}
+
+.photos-panel-title {
+   font-size: 1rem;
+   font-weight: 600;
+   color: var(--admin-text, #111827);
+   margin: 0;
+   display: flex;
+   align-items: center;
+   gap: 0.5rem;
+   flex: 1;
+}
+
+.photos-count {
+   font-size: 0.8rem;
+   font-weight: 400;
+   color: var(--admin-text-muted, #6b7280);
+   background: var(--admin-bg, #e5e7eb);
+   padding: 0.15rem 0.5rem;
+   border-radius: 999px;
+}
+
+/* Grid de fotos */
+.photos-grid {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+   gap: 1rem;
+   margin-top: 1rem;
+}
+
+.photo-card {
+   background: #fff;
+   border: 1px solid var(--admin-border, #e5e7eb);
+   border-radius: 0.5rem;
+   overflow: hidden;
+   display: flex;
+   flex-direction: column;
+}
+
+.photo-card-img-wrapper {
+   position: relative;
+   aspect-ratio: 4/3;
+   overflow: hidden;
+   background: #f3f4f6;
+}
+
+.photo-card-img {
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+   display: block;
+   transition: transform 0.2s;
+}
+
+.photo-card:hover .photo-card-img {
+   transform: scale(1.04);
+}
+
+.photo-badge-primary {
+   position: absolute;
+   top: 0.4rem;
+   left: 0.4rem;
+   background: #f59e0b;
+   color: #fff;
+   font-size: 0.65rem;
+   font-weight: 700;
+   padding: 0.15rem 0.4rem;
+   border-radius: 999px;
+   text-transform: uppercase;
+   letter-spacing: 0.03em;
+}
+
+.photo-card-footer {
+   padding: 0.6rem 0.75rem;
+   display: flex;
+   flex-direction: column;
+   gap: 0.4rem;
+}
+
+.photo-caption {
+   font-size: 0.78rem;
+   color: var(--admin-text-muted, #6b7280);
+   margin: 0;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+}
+
+/* Estado vacío */
+.photos-empty {
+   text-align: center;
+   padding: 2rem;
+   color: var(--admin-text-muted, #6b7280);
+}
+
+.photos-empty p {
+   margin: 0.25rem 0;
+   font-size: 0.9rem;
+}
+
+/* Overlay mientras sube */
+.photos-uploading-overlay {
+   position: absolute;
+   inset: 0;
+   background: rgba(255, 255, 255, 0.7);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   border-radius: 0.5rem;
+}
+
+.photos-uploading-msg {
+   background: #fff;
+   border: 1px solid var(--admin-border, #e5e7eb);
+   border-radius: 0.5rem;
+   padding: 1rem 1.5rem;
+   font-size: 0.9rem;
+   font-weight: 500;
+   color: var(--admin-text, #111827);
+   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Botón pequeño (para eliminar dentro de la card) */
+.admin-btn-sm {
+   font-size: 0.75rem;
+   padding: 0.3rem 0.6rem;
+}
+
+.admin-btn-danger {
+   background: #fee2e2;
+   color: #dc2626;
+   border: 1px solid #fca5a5;
+}
+
+.admin-btn-danger:hover:not(:disabled) {
+   background: #fecaca;
+}
+
+.img-container {
+  width:80%;
+  height: auto;
+  /* max-height: 200px; */
+  overflow: hidden;
+  border-radius: 8px;
+  margin-left: auto
+}
+.photos-main-image{
+   color: black;
+   margin-bottom: 10px;
+}
+
+.photo-card-footer {
+   display: flex;
+   flex-direction: row;
+   gap: 4px;
+   align-items: center;
+   padding: 4px;
+  
+}
