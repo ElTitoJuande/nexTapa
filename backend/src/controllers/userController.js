@@ -9,6 +9,12 @@ const canAccessUser = (requestUser, targetUserId) => {
   return requestUser._id.toString() === targetUserId.toString();
 };
 
+const normalizeUsername = (username) => {
+  if (typeof username !== "string") return null;
+  const normalized = username.trim().replace(/^@+/, "").toLowerCase();
+  return normalized || null;
+};
+
 // ==========================================
 // OBTENER TODOS LOS USUARIOS (ADMIN)
 // ==========================================
@@ -80,12 +86,33 @@ export const getUserById = async (req, res) => {
 // ==========================================
 export const createUser = async (req, res) => {
   try {
-    const { name, email, password, phone, role, businessName, cif } = req.body;
+    const {
+      name,
+      email,
+      password,
+      passwordConfirm,
+      username,
+      avatar,
+      phone,
+      role,
+      businessName,
+      businessAddress,
+      businessLogo,
+      cif,
+    } = req.body;
+    const normalizedUsername = normalizeUsername(username);
 
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
         message: "Por favor proporciona nombre, email y contraseña",
+      });
+    }
+
+    if (passwordConfirm !== undefined && password !== passwordConfirm) {
+      return res.status(400).json({
+        success: false,
+        message: "Las contraseñas no coinciden",
       });
     }
 
@@ -97,12 +124,36 @@ export const createUser = async (req, res) => {
       });
     }
 
+    if (normalizedUsername) {
+      const existingUsername = await User.findOne({ username: normalizedUsername });
+      if (existingUsername) {
+        return res.status(409).json({
+          success: false,
+          message: "Ya existe un usuario con este nombre de usuario",
+        });
+      }
+    }
+
     const selectedRole = role === "hostelero" ? "hostelero" : "cliente";
 
-    if (selectedRole === "hostelero" && (!businessName || !cif)) {
+    const normalizedBusinessName =
+      typeof businessName === "string" ? businessName.trim() : "";
+    const normalizedBusinessAddress =
+      typeof businessAddress === "string" ? businessAddress.trim() : "";
+    const normalizedBusinessLogo =
+      typeof businessLogo === "string" ? businessLogo.trim() : "";
+
+    if (
+      selectedRole === "hostelero" &&
+      (!normalizedBusinessName ||
+        !normalizedBusinessAddress ||
+        !normalizedBusinessLogo ||
+        !cif)
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Para registrarte como hostelero debes indicar businessName y cif",
+        message:
+          "Para registrarte como hostelero debes indicar businessName, businessAddress, businessLogo y cif",
       });
     }
 
@@ -110,9 +161,14 @@ export const createUser = async (req, res) => {
       name,
       email,
       password,
+      username: normalizedUsername || undefined,
+      avatar: typeof avatar === "string" ? avatar.trim() : null,
       phone: phone || null,
       role: selectedRole,
-      businessName: selectedRole === "hostelero" ? businessName : null,
+      businessName: selectedRole === "hostelero" ? normalizedBusinessName : null,
+      businessAddress:
+        selectedRole === "hostelero" ? normalizedBusinessAddress : null,
+      businessLogo: selectedRole === "hostelero" ? normalizedBusinessLogo : null,
       cif: selectedRole === "hostelero" ? cif : null,
     });
 
@@ -125,6 +181,19 @@ export const createUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error en createUser:", error);
+
+    if (error?.code === 11000) {
+      const duplicatedField = Object.keys(error.keyPattern || {})[0];
+      const message =
+        duplicatedField === "username"
+          ? "Ya existe un usuario con este nombre de usuario"
+          : "Ya existe un usuario con este email";
+
+      return res.status(409).json({
+        success: false,
+        message,
+      });
+    }
 
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((err) => err.message);
@@ -305,11 +374,14 @@ export const updateUser = async (req, res) => {
 
     const adminAllowedFields = [
       "name",
+      "username",
       "email",
       "password",
       "role",
       "phone",
       "businessName",
+      "businessAddress",
+      "businessLogo",
       "cif",
       "avatar",
       "verified",
@@ -317,9 +389,9 @@ export const updateUser = async (req, res) => {
       "active",
     ];
 
-    const selfAllowedFields = ["name", "phone", "avatar"];
+    const selfAllowedFields = ["name", "username", "phone", "avatar"];
     if (req.user.role === "hostelero") {
-      selfAllowedFields.push("businessName", "cif");
+      selfAllowedFields.push("businessName", "businessAddress", "businessLogo", "cif");
     }
 
     const allowedFields = isAdmin ? adminAllowedFields : selfAllowedFields;
@@ -350,6 +422,19 @@ export const updateUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error en updateUser:", error);
+
+    if (error?.code === 11000) {
+      const duplicatedField = Object.keys(error.keyPattern || {})[0];
+      const message =
+        duplicatedField === "username"
+          ? "Ya existe un usuario con ese nombre de usuario"
+          : "Ya existe un usuario con ese email";
+
+      return res.status(409).json({
+        success: false,
+        message,
+      });
+    }
 
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((err) => err.message);

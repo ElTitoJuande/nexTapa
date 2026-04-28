@@ -13,6 +13,28 @@ const userSchema = new mongoose.Schema({
     minlength: [3, 'El nombre debe tener al menos 3 caracteres'],
     maxlength: [50, 'El nombre no puede exceder 50 caracteres']
   },
+
+  username: {
+    type: String,
+    unique: true,
+    sparse: true,
+    lowercase: true,
+    trim: true,
+    default: undefined,
+    minlength: [3, 'El nombre de usuario debe tener al menos 3 caracteres'],
+    maxlength: [30, 'El nombre de usuario no puede exceder 30 caracteres'],
+    set: function(v) {
+      if (v === null || v === undefined) return undefined;
+      const normalized = String(v).trim().replace(/^@+/, '').toLowerCase();
+      return normalized || undefined;
+    },
+    validate: {
+      validator: function(v) {
+        return v === null || v === undefined || /^[a-z0-9._]+$/.test(v);
+      },
+      message: 'El nombre de usuario solo permite letras minúsculas, números, punto y guion bajo'
+    }
+  },
   
   email: {
     type: String,
@@ -28,6 +50,11 @@ const userSchema = new mongoose.Schema({
     required: [true, 'La contraseña es obligatoria'],
     minlength: [6, 'La contraseña debe tener al menos 6 caracteres'],
     select: false // CRÍTICO: Nunca se incluye en queries por defecto, previene leaks accidentales
+  },
+
+  isVerified: {
+    type: Boolean,
+    default: false
   },
 
   // ==========================================
@@ -53,9 +80,9 @@ const userSchema = new mongoose.Schema({
     // VALIDACIÓN AÑADIDA: Previene URLs malformadas que podrían causar XSS o errores de carga
     validate: {
       validator: function(v) {
-        return v === null || /^https?:\/\/.+\..+/.test(v);
+          return v === null || /^https?:\/\/.+\..+/.test(v) || /^\/[a-zA-Z0-9/_\-.]+$/.test(v);
       },
-      message: 'La URL del avatar debe ser válida (http:// o https://)'
+      message: 'El avatar debe ser una URL valida (http/https) o una ruta relativa (ej: /avatars/user-1.png)'
     }
   },
   
@@ -82,6 +109,24 @@ const userSchema = new mongoose.Schema({
     default: null,
     maxlength: [100, 'El nombre del negocio no puede exceder 100 caracteres']
   },
+
+  businessAddress: {
+    type: String,
+    trim: true,
+    default: null,
+    maxlength: [200, 'La dirección del negocio no puede exceder 200 caracteres']
+  },
+
+  businessLogo: {
+    type: String,
+    default: null,
+    validate: {
+      validator: function(v) {
+        return v === null || /^https?:\/\/.+\..+/.test(v) || /^\/[a-zA-Z0-9/_\-.]+$/.test(v);
+      },
+      message: 'El logo debe ser una URL valida (http/https) o una ruta relativa (ej: /logos/local-1.png)'
+    }
+  },
   
   cif: {
     type: String,
@@ -106,7 +151,6 @@ const userSchema = new mongoose.Schema({
   verified: {
     type: Boolean,
     default: false
-    // ✅ ELIMINADO: index: true (se define abajo con schema.index)
   },
 
   // ==========================================

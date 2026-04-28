@@ -66,7 +66,7 @@ export const AdressAdmin = memo(({ address, onChange, onCoordinatesChange, savin
                <label>País</label>
                <input className="admin-input" name="country" value={address.country} onChange={onChange} onBlur={handleBlur} />
             </div>
-            <SaveButton saving={saving} />
+            {/* <SaveButton saving={saving} /> */}
          </div>
       </section>
    );

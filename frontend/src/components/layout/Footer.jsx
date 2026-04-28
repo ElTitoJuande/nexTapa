@@ -1,134 +1,295 @@
+﻿import { useState, useEffect, useCallback, useRef } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ChefHat, Home, LayoutDashboard, Search, User } from "lucide-react";
 
-
-// import { useState } from "react";
-
-// const items = [
-//    { id: "home", label: "Home", icon: "home" },
-//    { id: "explore", label: "Explore", icon: "explore" },
-//    { id: "saved", label: "Saved", icon: "favorite" },
-//    { id: "profile", label: "Profile", icon: "person" },
-// ];
-
-// export default function Footer() {
-//    const [active, setActive] = useState("home");
-
-//    return (
-//       <footer className="fixed bottom-0 left-0 right-0 bg-neutral-900 border-t border-neutral-800 z-50">
-      
-//          <div className="max-w-md mx-auto flex justify-between px-6 py-3">
-//             {items.map(item => {
-//                const isActive = active === item.id;
-
-//                return (
-//                   <button
-//                      key={item.id}
-//                      onClick={() => setActive(item.id)}
-//                      className={`flex flex-col items-center gap-1 transition active:scale-95 ${
-//                         isActive ? "text-orange-500" : "text-neutral-400"
-//                      }`}
-//                   >
-//                      <span className="material-symbols-outlined text-xl">
-//                         {item.icon}
-//                      </span>
-//                      <span
-//                         className={`text-xs ${
-//                            isActive ? "font-semibold" : "font-medium"
-//                         }`}
-//                      >
-//                         {item.label}
-//                      </span>
-//                   </button>
-//                );
-//             })}
-//          </div>
-//       </footer>
-//    );
-// }
-
-
-
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-
-// Array de configuración de los items del menú de navegación inferior
-// Cada item tiene: id único, label visible, icono de Material Symbols y ruta de destino
-const items = [
-   { id: "home", label: "Home", icon: "home", path: "/" },
-   { id: "explore", label: "Explore", icon: "explore", path: "/explore" },
-   { id: "saved", label: "Saved", icon: "favorite", path: "/saved" },
-   { id: "profile", label: "Profile", icon: "person", path: "/login" },
+const baseItems = [
+  { id: "home", label: "Inicio", Icon: Home, path: "/" },
+  { id: "search", label: "Buscar", Icon: Search, path: "/search" },
 ];
 
-export default function Footer() {
-   // useNavigate: hook de React Router para navegación programática
-   const navigate = useNavigate();
-   
-   // useLocation: hook que nos da acceso a la ubicación actual (ruta) de la aplicación
-   const location = useLocation();
-   
-   /**
-    * Función helper para determinar qué item debe estar activo
-    * Busca en el array de items cuál coincide con la ruta actual (location.pathname)
-    * Si no encuentra ninguno, devuelve "home" como valor por defecto
-    * @returns {string} - El id del item activo
-    */
-   const getActiveItem = () => {
-      const currentItem = items.find(item => item.path === location.pathname);
-      return currentItem ? currentItem.id : "home";
-   };
+export const Footer = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated, user } = useAuth();
 
-   // Estado local para controlar qué item está activo en la navegación
-   // Se inicializa llamando a getActiveItem() para sincronizar con la ruta actual
-   const [active, setActive] = useState(getActiveItem());
+  // Estado para controlar la visibilidad
+  const [isVisible, setIsVisible] = useState(true);
+  const timeoutRef = useRef(null);
 
-   /**
-    * Manejador de clicks en los items del menú
-    * Actualiza el estado local (para el efecto visual) y navega a la ruta correspondiente
-    * @param {Object} item - El objeto item que fue clickeado
-    */
-   const handleItemClick = (item) => {
-      setActive(item.id); // Actualiza el estado visual
-      navigate(item.path); // Navega a la ruta del item
-   };
+  // Lógica para ocultar/mostrar
+  const showNavbar = useCallback(() => {
+    setIsVisible(true);
 
-   return (
-      // Footer fijado en la parte inferior con z-index alto para que esté siempre visible
-      // Usa Tailwind para styling: fondo oscuro, borde superior, y posicionamiento fixed
-      <footer className="p-4 max-w-3xl mx-auto">
-         {/* Contenedor centrado con ancho máximo para mantener el diseño responsive */}
-         <div className="max-w-md mx-auto flex justify-between px-6 py-3">
-            {/* Iteramos sobre cada item del array para renderizar los botones */}
-            {items.map(item => {
-               // Variable auxiliar para saber si este item es el activo actualmente
-               const isActive = active === item.id;
+    // Limpiamos el temporizador anterior si existe
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
 
-               return (
-                  <button
-                     key={item.id}
-                     onClick={() => handleItemClick(item)}
-                     // Clases condicionales: naranja si está activo, gris si no
-                     // active:scale-95 da un efecto de "presión" al hacer click
-                     className={`flex flex-col items-center gap-1 transition active:scale-95 ${
-                        isActive ? "text-orange-500" : "text-neutral-400"
-                     }`}
-                  >
-                     {/* Icono de Material Symbols - el nombre del icono viene del array items */}
-                     <span className="material-symbols-outlined text-xl">
-                        {item.icon}
-                     </span>
-                     
-                     {/* Label del item - cambia a font-semibold cuando está activo */}
-                     <span
-                        className={`text-xs ${
-                           isActive ? "font-semibold" : "font-medium"
+    // Ocultar después de 2.5 segundos de inactividad
+    timeoutRef.current = setTimeout(() => {
+      setIsVisible(false);
+    }, 2500);
+  }, []);
+
+  useEffect(() => {
+    // Eventos que disparan la visibilidad: scroll, mover ratón, tocar pantalla
+    const events = ["scroll", "mousemove", "touchstart", "keydown"];
+
+    events.forEach((event) => window.addEventListener(event, showNavbar));
+
+    // Mostrarla al cargar la página
+    showNavbar();
+
+    return () => {
+      events.forEach((event) => window.removeEventListener(event, showNavbar));
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [showNavbar]);
+
+  // --- Lógica de items original ---
+  const profileAvatar =
+    isAuthenticated && user?.role === "cliente" ? user?.avatar : null;
+
+  const profileItem = {
+    id: "profile",
+    label: isAuthenticated ? "Perfil" : "Entrar",
+    Icon: User,
+    path: "/profile",
+    avatar: profileAvatar,
+  };
+
+  const adminItem = (() => {
+    if (user?.role === "admin") {
+      return {
+        id: "admin",
+        label: "Panel",
+        Icon: LayoutDashboard,
+        path: "/admin",
+      };
+    }
+    if (user?.role === "hostelero") {
+      return {
+        id: "admin",
+        label: "Panel",
+        Icon: ChefHat,
+        path: "/host/dashboard",
+      };
+    }
+    return null;
+  })();
+
+  const items = [...baseItems, ...(adminItem ? [adminItem] : []), profileItem];
+
+  const isPathActive = (path) => {
+    if (path === "/admin") {
+      return location.pathname.startsWith("/admin");
+    }
+    if (path === "/host/dashboard") {
+      return location.pathname.startsWith("/host");
+    }
+    return location.pathname === path;
+  };
+
+  return (
+    <>
+      <div className="h-24" />
+      <footer
+        className={`fixed inset-x-0 bottom-0 z-50 pb-3 transition-all duration-500 ease-in-out ${
+          isVisible
+            ? "translate-y-0 opacity-100"
+            : "translate-y-24 opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="mx-auto flex w-full max-w-5xl justify-center px-4">
+          <nav
+            onMouseEnter={() => {
+              // Si el ratón está encima, cancelamos el ocultado automático
+              if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+              }
+              setIsVisible(true);
+            }}
+            onMouseLeave={showNavbar}
+            className="flex items-center gap-1 rounded-2xl border border-neutral-700/80 bg-neutral-900/88 p-1.5 shadow-[0_14px_34px_rgba(0,0,0,0.45)] backdrop-blur-xl pointer-events-auto"
+            aria-label="Navegación principal"
+          >
+            {items.map((item) => {
+              const isActive = isPathActive(item.path);
+              const ItemIcon = item.Icon;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => navigate(item.path)}
+                  className={`group flex min-w-[72px] flex-col items-center gap-1 rounded-xl px-3 py-2 transition-all duration-200 active:scale-95 ${
+                    isActive
+                      ? "bg-orange-500/15 text-orange-400"
+                      : "text-neutral-400 hover:bg-neutral-800/70 hover:text-neutral-200"
+                  }`}
+                >
+                  <div className="relative flex h-6 items-center justify-center">
+                    {item.id === "profile" && item.avatar ? (
+                      <img
+                        src={item.avatar}
+                        alt="avatar"
+                        className={`h-6 w-6 rounded-full object-cover ${
+                          isActive
+                            ? "ring-2 ring-orange-500/90"
+                            : "ring-1 ring-neutral-600"
                         }`}
-                     >
-                        {item.label}
-                     </span>
-                  </button>
-               );
+                      />
+                    ) : (
+                      <ItemIcon
+                        size={20}
+                        strokeWidth={isActive ? 2.5 : 1.8}
+                        fill={isActive ? "currentColor" : "none"}
+                      />
+                    )}
+
+                    {isActive && (
+                      <span className="absolute -bottom-1 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-orange-500/85" />
+                    )}
+                  </div>
+
+                  <span
+                    className={`text-[10px] tracking-wide ${
+                      isActive ? "font-semibold" : "font-medium"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                </button>
+              );
             })}
-         </div>
+          </nav>
+        </div>
       </footer>
-   );
-}
+    </>
+  );
+};
+
+// import { useAuth } from "../../context/AuthContext";
+// import { useLocation, useNavigate } from "react-router-dom";
+// import { ChefHat, Home, LayoutDashboard, Search, User } from "lucide-react";
+
+// const baseItems = [
+//   { id: "home", label: "Inicio", Icon: Home, path: "/" },
+//   { id: "search", label: "Buscar", Icon: Search, path: "/search" },
+// ];
+
+// export const Footer = () => {
+//   const navigate = useNavigate();
+//   const location = useLocation();
+//   const { isAuthenticated, user } = useAuth();
+
+//   const profileAvatar =
+//     isAuthenticated && user?.role === "cliente" ? user?.avatar : null;
+
+//   const profileItem = {
+//     id: "profile",
+//     label: isAuthenticated ? "Perfil" : "Entrar",
+//     Icon: User,
+//     path: "/profile",
+//     avatar: profileAvatar,
+//   };
+
+//   const adminItem = (() => {
+//     if (user?.role === "admin") {
+//       return {
+//         id: "admin",
+//         label: "Panel",
+//         Icon: LayoutDashboard,
+//         path: "/admin",
+//       };
+//     }
+
+//     if (user?.role === "hostelero") {
+//       return {
+//         id: "admin",
+//         label: "Panel",
+//         Icon: ChefHat,
+//         path: "/host/dashboard",
+//       };
+//     }
+
+//     return null;
+//   })();
+
+//   const items = [...baseItems, ...(adminItem ? [adminItem] : []), profileItem];
+
+//   const isPathActive = (path) => {
+//     if (path === "/admin") {
+//       return location.pathname.startsWith("/admin");
+//     }
+
+//     if (path === "/host/dashboard") {
+//       return location.pathname.startsWith("/host");
+//     }
+
+//     return location.pathname === path;
+//   };
+
+//   return (
+//     <>
+//       <div className="h-24" />
+//       <footer className="pointer-events-none fixed inset-x-0 bottom-0 z-50 pb-3">
+//         <div className="mx-auto flex w-full max-w-5xl justify-center px-4">
+//           <nav
+//             className="pointer-events-auto flex items-center gap-1 rounded-2xl border border-neutral-700/80 bg-neutral-900/88 p-1.5 shadow-[0_14px_34px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+//             aria-label="Navegación principal"
+//           >
+//             {items.map((item) => {
+//               const isActive = isPathActive(item.path);
+//               const ItemIcon = item.Icon;
+
+//               return (
+//                 <button
+//                   key={item.id}
+//                   onClick={() => navigate(item.path)}
+//                   className={`group flex min-w-[72px] flex-col items-center gap-1 rounded-xl px-3 py-2 transition-all duration-200 active:scale-95 ${
+//                     isActive
+//                       ? "bg-orange-500/15 text-orange-400"
+//                       : "text-neutral-400 hover:bg-neutral-800/70 hover:text-neutral-200"
+//                   }`}
+//                 >
+//                   <div className="relative flex h-6 items-center justify-center">
+//                     {item.id === "profile" && item.avatar ? (
+//                       <img
+//                         src={item.avatar}
+//                         alt="avatar"
+//                         className={`h-6 w-6 rounded-full object-cover ${
+//                           isActive
+//                             ? "ring-2 ring-orange-500/90"
+//                             : "ring-1 ring-neutral-600"
+//                         }`}
+//                       />
+//                     ) : (
+//                       <ItemIcon
+//                         size={20}
+//                         strokeWidth={isActive ? 2.5 : 1.8}
+//                         fill={isActive ? "currentColor" : "none"}
+//                       />
+//                     )}
+
+//                     {isActive && (
+//                       <span className="absolute -bottom-1 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-orange-500/85" />
+//                     )}
+//                   </div>
+
+//                   <span
+//                     className={`text-[10px] tracking-wide ${isActive ? "font-semibold" : "font-medium"}`}
+//                   >
+//                     {item.label}
+//                   </span>
+//                 </button>
+//               );
+//             })}
+//           </nav>
+//         </div>
+//       </footer>
+//     </>
+//   );
+// };

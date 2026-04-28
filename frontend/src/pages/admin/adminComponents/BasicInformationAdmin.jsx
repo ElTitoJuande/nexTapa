@@ -35,7 +35,7 @@ export const BasicInformationAdmin = memo(({ form, onChange, saving }) => {
             </div>
          </div>
 
-         <SaveButton saving={saving} />
+         {/* <SaveButton saving={saving} /> */}
       </section>
    );
 });

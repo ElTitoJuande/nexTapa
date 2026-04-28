@@ -1,6 +1,55 @@
 @import "tailwindcss";
 
+:root {
+  --public-shell-gradient:
+    radial-gradient(1000px 640px at 85% -12%, rgba(255, 126, 47, 0.16), transparent 58%),
+    radial-gradient(680px 420px at -8% 118%, rgba(255, 98, 0, 0.12), transparent 62%),
+    linear-gradient(180deg, #16100d 0%, #0d0c0b 100%);
+}
+
 body {
   background-color: #0a0a0a;
   color: white;
+}
+
+.public-shell-gradient {
+  background: var(--public-shell-gradient);
+  background-attachment: fixed;
+}
+
+.auth-input {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: transparent !important;
+  box-shadow: none;
+}
+
+.auth-input:focus,
+.auth-input:focus-visible {
+  background-color: transparent !important;
+  box-shadow: none;
+  outline: none;
+}
+
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus,
+.auth-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #e2e8f0 !important;
+  caret-color: #e2e8f0;
+  -webkit-box-shadow: 0 0 0 1000px #141924 inset !important;
+  box-shadow: 0 0 0 1000px #141924 inset !important;
+  transition: background-color 9999s ease-out 0s;
+}
+
+.avatar-scroll-strip {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+
+.avatar-scroll-strip::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }

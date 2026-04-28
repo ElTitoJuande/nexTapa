@@ -1,0 +1,84 @@
+/* src/pages/admin/styles/itemAdmin.css */
+
+/* ── Page titles ── */
+.admin-page-title    { font-size: 1.4rem; font-weight: 700; color: #111827; margin: 0; }
+.admin-page-subtitle { font-size: 0.85rem; color: #6b7280; margin: 0.2rem 0 0; }
+
+/* ── Section description ── */
+.admin-section-desc  { font-size: 0.85rem; color: #6b7280; margin: -0.5rem 0 1rem; }
+
+/* ── Field extras ── */
+.admin-field-hint {
+   display: block;
+   font-size: 0.78rem;
+   color: #9ca3af;
+   margin-top: 0.35rem;
+}
+.admin-textarea { resize: vertical; min-height: 100px; }
+
+/* ── Precio con prefijo ── */
+.admin-input-prefix-wrapper {
+   display: flex;
+   align-items: center;
+   border: 1px solid #d1d5db;
+   border-radius: 6px;
+   overflow: hidden;
+   max-width: 180px;
+}
+.admin-input-prefix {
+   padding: 7px 10px;
+   background: #f3f4f6;
+   border-right: 1px solid #d1d5db;
+   color: #6b7280;
+   font-size: 0.9rem;
+   font-weight: 600;
+}
+.admin-input-with-prefix { border: none !important; border-radius: 0 !important; flex: 1; }
+
+/* ── Tag selector (pills) ── */
+.admin-tag-grid {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 8px;
+   margin-top: 8px;
+}
+.admin-tag-btn {
+   padding: 5px 12px;
+   border-radius: 999px;
+   border: 1px solid #d1d5db;
+   background: #f9fafb;
+   color: #374151;
+   font-size: 0.82rem;
+   cursor: pointer;
+   transition: all 0.15s ease;
+   white-space: nowrap;
+}
+.admin-tag-btn:hover       { border-color: #9ca3af; background: #f3f4f6; }
+.admin-tag-btn.is-selected { background: #1e2a3a; border-color: #1e2a3a; color: #fff; }
+
+/* ── Toggle fields (disponible, destacado...) ── */
+.admin-toggles-list { display: flex; flex-direction: column; gap: 8px; }
+
+.admin-toggle-field {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   padding: 12px 16px;
+   background: #f9fafb;
+   border: 1px solid #e5e7eb;
+   border-radius: 8px;
+}
+.admin-toggle-field-info  { display: flex; flex-direction: column; gap: 2px; }
+.admin-toggle-field-label { font-size: 0.875rem; font-weight: 500; color: #111827; }
+.admin-toggle-field-desc  { font-size: 0.78rem; color: #6b7280; }
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 968px) {
+   /* Precio: ancho completo en móvil */
+   .admin-input-prefix-wrapper {
+      max-width: 100%;
+   }
+
+}

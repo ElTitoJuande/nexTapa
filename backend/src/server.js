@@ -1,12 +1,13 @@
 import "dotenv/config";
-import app from "./app.js";
-import { connectDB } from "./config/database.js"
+import { server } from "./app.js";
+import { connectDB } from "./config/database.js";
 
-await connectDB(); //Llamamos a la funcion encargada de conectar con la BBDD
-
-
+await connectDB();
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Backend running on http://localhost:${PORT}`);
+
+
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Backend running on http://0.0.0.0:${PORT}`);
+  console.log(`🔌 WebSocket en ws://0.0.0.0:${PORT}/ws?role=admin`);
 });

@@ -9,7 +9,7 @@ export const ContactAdmin = memo(({ contact, onChange, saving }) => {
    return (
       <section className="admin-section">
          <h2 className="admin-section-title">Datos de Contacto</h2>
-         <div className="admin-grid-2">
+         <div className="admin-grid-1">
             <div className="admin-field">
                <label>Telefono *</label>
                <input className="admin-input" name="phone" value={contact.phone} onChange={onChange} required />
@@ -22,7 +22,7 @@ export const ContactAdmin = memo(({ contact, onChange, saving }) => {
                <label>Website</label>
                <input className="admin-input" name="website" value={contact.website} onChange={onChange} />
             </div>
-            <SaveButton saving={saving} />
+            {/* <SaveButton saving={saving} /> */}
          </div>
       </section>
    );

@@ -1,28 +1,39 @@
+// src/routes/establishmentRoutes.js
 import { Router } from 'express';
-import { 
-  getEstablishments, 
+import {
+  getEstablishments,
   getEstablishmentById,
-  createEstablishment, 
-  deleteEstablishment, 
-  reactivateEstablishment, 
+  getMine,
+  getPending,
+  createEstablishment,
+  deleteEstablishment,
+  deactivateEstablishment,
+  reactivateEstablishment,
   updateEstablishment,
-  getEstablishmentBySlug
- } 
-  from '../controllers/establishmentController.js';
+  getEstablishmentBySlug,
+  getNearbyEstablishments,
+  updateSocialLinks,
+  verifyEstablishment,
+  rejectEstablishment,
+} from '../controllers/establishmentController.js';
+import { verifyToken, restrictTo } from '../middlewares/authMiddleware.js';
 
 export const establishmentRouter = Router();
 
+// ── Rutas estáticas — SIEMPRE antes de /:id ───────────────────────────────────
+establishmentRouter.get('/',           getEstablishments);
+establishmentRouter.get('/mine',       verifyToken, restrictTo('hostelero'), getMine);
+establishmentRouter.get('/pending',    verifyToken, restrictTo('admin'),     getPending);
+establishmentRouter.get('/slug/:slug', getEstablishmentBySlug);
+establishmentRouter.get('/nearby',     getNearbyEstablishments);
 
-establishmentRouter.get('/', getEstablishments);
-
-establishmentRouter.get('/slug/:slug', getEstablishmentBySlug);//importante poner antes que el get por id para que no haya conflictos con los slugs que puedan ser similares a los ids
-
-establishmentRouter.get('/:id', getEstablishmentById);
-
-establishmentRouter.post('/', createEstablishment);
-
-establishmentRouter.delete('/:id', deleteEstablishment);
-
-establishmentRouter.patch('/:id/reactivate', reactivateEstablishment);//importante poner antes que el update para que no haya conflictos con los id de reactivación que puedan ser similares a los ids de actualización
-
-establishmentRouter.patch('/:id', updateEstablishment);
+// ── Rutas dinámicas con :id ───────────────────────────────────────────────────
+establishmentRouter.get('/:id',                getEstablishmentById);
+establishmentRouter.post('/',                  createEstablishment);
+establishmentRouter.delete('/:id',             deleteEstablishment);
+establishmentRouter.patch('/:id/reactivate',   reactivateEstablishment);
+establishmentRouter.patch('/:id/deactivate',   deactivateEstablishment);
+establishmentRouter.patch('/:id/social-links', updateSocialLinks);
+establishmentRouter.patch('/:id/verify',       verifyToken, restrictTo('admin'), verifyEstablishment);
+establishmentRouter.patch('/:id/reject',       verifyToken, restrictTo('admin'), rejectEstablishment);
+establishmentRouter.patch('/:id',              updateEstablishment);

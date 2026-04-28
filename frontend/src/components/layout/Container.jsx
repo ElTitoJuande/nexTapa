@@ -1,8 +1,8 @@
 
 
-export default function Container({ children }) {
+export default function Container({ children, className = "" }) {
    return (
-      <main className="p-4 max-w-3xl mx-auto">
+      <main className={`mx-auto max-w-3xl p-4 ${className}`}>
          {children}
       </main>
    );

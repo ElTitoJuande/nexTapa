@@ -1,3 +1,5 @@
+
+
 // src/admin/adminComponents/MapboxPicker.jsx
 
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -18,16 +20,27 @@ export const MapboxPicker = ({ coordinates, onChange, onAddressChange, saving })
    const [geocoding, setGeocoding] = useState(false);
 
    // ── Geocodificación inversa: [lng, lat] → dirección ──────────────
-   const reverseGeocode = useCallback(async (newLng, newLat) => {
-      if (!onAddressChange) {return;}
+   // Se usan las coordenadas SIN redondear para máxima precisión en la query.
+   // Parámetros clave:
+   //   - proximity: sesga Mapbox hacia el punto exacto en vez del centroide de calle
+   //   - limit=1: solo el resultado más relevante
+   //   - autocomplete=false: modo lookup exacto, no sugerencias
+   const reverseGeocode = useCallback(async (rawLng, rawLat) => {
+      if (!onAddressChange) { return; }
       try {
          setGeocoding(true);
          const res = await fetch(
-            `https://api.mapbox.com/geocoding/v5/mapbox.places/${newLng},${newLat}.json?types=address&language=es&access_token=${import.meta.env.VITE_MAPBOX_TOKEN}`
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${rawLng},${rawLat}.json` +
+            `?types=address` +
+            `&language=es` +
+            `&limit=1` +
+            `&proximity=${rawLng},${rawLat}` +
+            `&autocomplete=false` +
+            `&access_token=${import.meta.env.VITE_MAPBOX_TOKEN}`
          );
          const data = await res.json();
          const feature = data.features?.[0];
-         if (!feature) {return;}
+         if (!feature) { return; }
 
          const context = feature.context || [];
          const get = (type) => context.find(c => c.id.startsWith(type))?.text || '';
@@ -48,25 +61,28 @@ export const MapboxPicker = ({ coordinates, onChange, onAddressChange, saving })
    }, [onAddressChange]);
 
    // ── Actualizar posición completa ──────────────────────────────────
+   // Se guardan 6 decimales (~11 cm de precisión), suficiente para uso real.
+   // La geocodificación inversa recibe las coords RAW (sin redondear) para
+   // que Mapbox trabaje con la máxima precisión posible.
    const updatePosition = useCallback((newLng, newLat) => {
       const roundedLng = parseFloat(newLng.toFixed(6));
       const roundedLat = parseFloat(newLat.toFixed(6));
       setLng(roundedLng);
       setLat(roundedLat);
       onChange([roundedLng, roundedLat]);
-      reverseGeocode(roundedLng, roundedLat);
+      reverseGeocode(newLng, newLat); // ← coords raw, sin redondear
    }, [onChange, reverseGeocode]);
 
    // ── Inicializar mapa ──────────────────────────────────────────────
    useEffect(() => {
-      if (map.current) {return;}
-      if (!mapContainer.current) {return;}
+      if (map.current) { return; }
+      if (!mapContainer.current) { return; }
 
       map.current = new mapboxgl.Map({
          container: mapContainer.current,
          style: 'mapbox://styles/mapbox/streets-v12',
          center: [lng, lat],
-         zoom: 14,
+         zoom: 17, // ← zoom más alto por defecto para más contexto visual
       });
 
       marker.current = new mapboxgl.Marker({ draggable: true, color: '#E53E3E' })
@@ -89,14 +105,14 @@ export const MapboxPicker = ({ coordinates, onChange, onAddressChange, saving })
 
    // ── Sincronizar si las coordenadas cambian desde fuera (dirección → mapa) ──
    useEffect(() => {
-      if (!map.current || !marker.current) {return;}
-      if (!coordinates || coordinates.length !== 2) {return;}
+      if (!map.current || !marker.current) { return; }
+      if (!coordinates || coordinates.length !== 2) { return; }
       const [newLng, newLat] = coordinates;
       if (Math.abs(newLng - lng) > 0.0001 || Math.abs(newLat - lat) > 0.0001) {
          setLng(newLng);
          setLat(newLat);
          marker.current.setLngLat([newLng, newLat]);
-         map.current.flyTo({ center: [newLng, newLat], zoom: 15 });
+         map.current.flyTo({ center: [newLng, newLat], zoom: 17 });
       }
    }, [coordinates]);
 
@@ -104,7 +120,7 @@ export const MapboxPicker = ({ coordinates, onChange, onAddressChange, saving })
    const handleManualChange = (newLng, newLat) => {
       if (map.current && marker.current) {
          marker.current.setLngLat([newLng, newLat]);
-         map.current.flyTo({ center: [newLng, newLat], zoom: 15 });
+         map.current.flyTo({ center: [newLng, newLat], zoom: 17 });
       }
       onChange([newLng, newLat]);
       reverseGeocode(newLng, newLat);
@@ -135,7 +151,7 @@ export const MapboxPicker = ({ coordinates, onChange, onAddressChange, saving })
                <label>Longitud</label>
                <input
                   type="number"
-                  step="any"
+                  step="0.0000001"
                   value={lng}
                   className="admin-input"
                   onChange={(e) => {
@@ -149,7 +165,7 @@ export const MapboxPicker = ({ coordinates, onChange, onAddressChange, saving })
                <label>Latitud</label>
                <input
                   type="number"
-                  step="any"
+                  step="0.0000001"
                   value={lat}
                   className="admin-input"
                   onChange={(e) => {
@@ -162,7 +178,7 @@ export const MapboxPicker = ({ coordinates, onChange, onAddressChange, saving })
          </div>
 
          <div className="admin-form-footer">
-            <SaveButton saving={saving} />
+            {/* <SaveButton saving={saving} /> */}
          </div>
       </div>
    );

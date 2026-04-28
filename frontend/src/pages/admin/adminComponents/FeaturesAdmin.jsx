@@ -50,7 +50,7 @@ export const FeaturesAdmin = memo(({ features, onAdd, onRemove, saving }) => {
                </button>
             </div>
          </div>
-         <SaveButton saving={saving} />
+         {/* <SaveButton saving={saving} /> */}
       </section>
    );
 });

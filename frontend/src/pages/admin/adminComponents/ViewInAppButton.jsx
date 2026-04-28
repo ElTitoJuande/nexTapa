@@ -5,13 +5,13 @@
 
 import { memo } from 'react';
 
-export const ViewInAppButton = memo(({ id }) => {
-   if (!id) {return null;}
-
+export const ViewInAppButton = memo(({ slug }) => {
+   if (!slug) {return null;}
+   
    return (
        
       <a
-         href={`/establishment/${id}`}
+         href={`/establishment/${slug}`}
          target="_blank"
          rel="noopener noreferrer"
          className="admin-btn admin-btn-secondary admin-btn-sm"

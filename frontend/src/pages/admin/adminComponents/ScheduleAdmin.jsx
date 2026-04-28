@@ -1,3 +1,5 @@
+
+
 // src/pages/admin/adminComponents/ScheduleAdmin.jsx
 
 import { memo } from 'react';
@@ -5,49 +7,101 @@ import { SaveButton } from './SaveButton';
 
 const DAYS = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
 
-export const ScheduleAdmin = memo(({ schedule, onChange, saving }) => {
+const TimeRange = ({ openVal, closeVal, onChangeOpen, onChangeClose, disabled }) => (
+   <div className="admin-schedule-timerange">
+      <input
+         className="admin-input admin-input-time"
+         type="time"
+         value={openVal || ''}
+         onChange={e => onChangeOpen(e.target.value)}
+         disabled={disabled}
+      />
+      <span className="admin-schedule-separator">–</span>
+      <input
+         className="admin-input admin-input-time"
+         type="time"
+         value={closeVal || ''}
+         onChange={e => onChangeClose(e.target.value)}
+         disabled={disabled}
+      />
+   </div>
+);
+
+export const ScheduleAdmin = memo(({
+   schedule,
+   onChange,
+   saving,
+   showSaveButton = true,
+}) => {
    return (
       <section className="admin-section">
          <h2 className="admin-section-title">Horarios</h2>
          <div className="admin-schedule">
-            {DAYS.map(day => (
-               <div key={day} className="admin-schedule-row">
-                  <span className="admin-schedule-day">{day}</span>
+            {DAYS.map(day => {
+               const d = schedule[day] || {};
+               return (
+                  <div key={day} className="admin-schedule-row">
 
-                  <div className="admin-toggle">
+                     {/* Nombre del día */}
+                     <span className="admin-schedule-day">{day}</span>
+
+                     {/* Toggle abierto/cerrado */}
                      <button
                         type="button"
-                        className={`admin-toggle-btn ${schedule[day]?.closed ? 'is-closed' : 'is-open'}`}
-                        onClick={() => onChange(day, 'closed', !schedule[day]?.closed)}
+                        className={`admin-toggle-btn ${d.closed ? 'is-closed' : 'is-open'}`}
+                        onClick={() => onChange(day, 'closed', !d.closed)}
                      >
-                        {schedule[day]?.closed ? 'Cerrado' : 'Abierto'}
+                        {d.closed ? 'Cerrado' : 'Abierto'}
                      </button>
-                     <label htmlFor={`closed-${day}`}>Cerrado</label>
-                  </div>
 
-                  {!schedule[day]?.closed ? (
-                     <>
-                        <input
-                           className="admin-input admin-input-time"
-                           type="time"
-                           value={schedule[day]?.open || ''}
-                           onChange={e => onChange(day, 'open', e.target.value)}
-                        />
-                        <span className="admin-schedule-separator">–</span>
-                        <input
-                           className="admin-input admin-input-time"
-                           type="time"
-                           value={schedule[day]?.close || ''}
-                           onChange={e => onChange(day, 'close', e.target.value)}
-                        />
-                     </>
-                  ) : (
-                     <span className="admin-schedule-closed">Cerrado</span>
-                  )}
-               </div>
-            ))}
+                     {d.closed ? (
+                        <span className="admin-schedule-closed-label">Cerrado</span>
+                     ) : (
+                        <div className="admin-schedule-times">
+
+                           {/* Turno único o turno de mañana si está partido */}
+                           <div className="admin-schedule-shift">
+                              {d.split && (
+                                 <span className="admin-schedule-shift-label">Mañana</span>
+                              )}
+                              <TimeRange
+                                 openVal={d.open}
+                                 closeVal={d.close}
+                                 onChangeOpen={v => onChange(day, 'open', v)}
+                                 onChangeClose={v => onChange(day, 'close', v)}
+                              />
+                           </div>
+
+                           {/* Turno de tarde — solo si split activo */}
+                           {d.split && (
+                              <div className="admin-schedule-shift">
+                                 <span className="admin-schedule-shift-label">Tarde</span>
+                                 <TimeRange
+                                    openVal={d.afternoon?.open}
+                                    closeVal={d.afternoon?.close}
+                                    onChangeOpen={v => onChange(day, 'afternoon', { open: v })}
+                                    onChangeClose={v => onChange(day, 'afternoon', { close: v })}
+                                 />
+                              </div>
+                           )}
+
+                           {/* Toggle horario partido */}
+                           <button
+                              type="button"
+                              className={`admin-toggle-split ${d.split ? 'is-active' : ''}`}
+                              onClick={() => onChange(day, 'split', !d.split)}
+                              title="Horario partido"
+                           >
+                              {d.split ? '✕ Turno partido' : '+ Turno partido'}
+                           </button>
+
+                        </div>
+                     )}
+                  </div>
+               );
+            })}
          </div>
-         <SaveButton saving={saving} />
+         {showSaveButton && <SaveButton saving={saving} />}
       </section>
    );
 });
